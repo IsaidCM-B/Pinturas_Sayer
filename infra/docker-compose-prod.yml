@@ -1,0 +1,41 @@
+# infra/docker-compose.prod.yml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: sayer_user
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: sayer_pos
+
+  backend:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://sayer_user:$DB_PASSWORD@db:5432/sayer_pos
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:3000"
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "443:443"
+    volumes:
+      - ./infra/nginx:/etc/nginx/conf.d
+    depends_on:
+      - frontend
+
+volumes:
+  pg_data:

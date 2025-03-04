@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+*.sqlite
+.DS_Store
+.vscode/
+data/
+infra/nginx/certs/ 
